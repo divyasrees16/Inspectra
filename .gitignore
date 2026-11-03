@@ -1,0 +1,22 @@
+# Python environments
+.venv/
+venv/
+env/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+
+# Local secrets and Streamlit credentials
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Temporary uploaded/generated videos
+temp_*.mp4
+
+# Local tooling and test output
+.pytest_cache/
+.coverage
+*.log

@@ -1,0 +1,8 @@
+streamlit
+opencv-python
+numpy
+onnxruntime
+pillow
+python-dotenv
+influxdb
+groq
