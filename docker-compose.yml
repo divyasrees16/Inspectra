@@ -1,0 +1,48 @@
+# InSpectra monitoring stack: InfluxDB 1.8 (time-series store) + Grafana (dashboards)
+#
+#   docker compose up -d        start both services
+#   docker compose ps           check they are running
+#   docker compose down         stop (data is kept in the named volumes)
+#   docker compose down -v      stop AND delete all stored data
+#
+# The Streamlit app runs on your machine (not in Docker) and writes to
+# localhost:8086, which this file publishes. Grafana reaches InfluxDB over the
+# internal Docker network using the hostname "influxdb".
+
+services:
+  influxdb:
+    image: influxdb:1.8            # must be 1.x: the app uses the `influxdb` v1 Python client
+    container_name: inspectra-influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      INFLUXDB_DB: defects         # database is created automatically on first start
+      INFLUXDB_HTTP_AUTH_ENABLED: "false"   # the app connects without credentials
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+
+  grafana:
+    image: grafana/grafana-oss:latest   # pin a version (e.g. 11.x) for production
+    container_name: inspectra-grafana
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}   # change this!
+      GF_USERS_DEFAULT_THEME: dark
+      # Optional: uncomment to embed Grafana panels inside the Streamlit app (iframe)
+      # GF_SECURITY_ALLOW_EMBEDDING: "true"
+      # GF_AUTH_ANONYMOUS_ENABLED: "true"
+      # GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+volumes:
+  influxdb-data:
+  grafana-data:
